@@ -16,6 +16,7 @@ opcode_list = ["", "HALT", "LOAD", "STORE", "ADD", "SUB", "INC", "DEC", "XOR", "
 
 
 inputFile = open("prog.asm", "r")
+outputFile = open("prog.bin", "w")
 
 for line in inputFile:
     line = line.strip()
@@ -94,14 +95,15 @@ for lines in all_lines:
             hex_data = "0" + hex_data
 
         result =  a + hex_data
-        print (result)
+        outputFile.write(result+"\n")
 
     elif instruction == "HALT" :
 
         result = "040000"
-        print (result)
+        outputFile.write(result+"\n")
 
     #else:  #label
         
     isLabel = False
 
+outputFile.close()
