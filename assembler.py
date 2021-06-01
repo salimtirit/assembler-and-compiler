@@ -10,12 +10,12 @@ def string_binary_to_integer(binary):
 
 counter = 0   #counts instructions
 all_lines = []  #store lines
-registers = ["","A", "B", "C", "D"]
+registers = ["","A", "B", "C", "D", "E"]
 label_dict = {}  #stores labels with their address values, a map
 opcode_list = ["", "HALT", "LOAD", "STORE", "ADD", "SUB", "INC", "DEC", "XOR", "AND", "OR", "NOT", "SHL", "SHR", "NOP", "PUSH", "POP", "CMP", "JMP", ["JZ", "JE"], ["JNZ", "JNE"], "JC", "JNC", "JA", "JAE", "JB", "JBE", "READ", "PRINT"]
 
 
-inputFile = open("prog.asm", "r")
+inputFile = open("prog1.asm", "r")
 outputFile = open("prog.bin", "w")
 
 for line in inputFile:
@@ -49,7 +49,7 @@ for lines in all_lines:
     addessing_mode = ""
     #data part
     if isLabel == False :
-        if instruction == "HALT":
+        if instruction == "HALT" or instruction == "NOP":
             addessing_mode = "00"
             hex_data = "0000"
         else:
@@ -102,6 +102,9 @@ for lines in all_lines:
         result = "040000"
         outputFile.write(result+"\n")
 
+    elif instruction == "NOP":
+        result = "380000"
+        outputFile.write(result+"\n")
     #else:  #label
         
     isLabel = False

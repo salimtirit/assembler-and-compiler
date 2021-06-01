@@ -8,7 +8,7 @@ B = [None]
 C = [None]
 D = [None]
 E = [None]
-S = 2**16  # [2**16]  Which one?
+S = 2**16 - 1
 PC = 0
 CF = 0
 ZF = False
@@ -27,6 +27,8 @@ registers = {
 }
 
 def adjust_flag(data) :
+    global ZF
+    global SF
     if data == bin_zero :    #adjust ZF
         ZF = True
     else :
@@ -36,29 +38,34 @@ def adjust_flag(data) :
         SF = True      #also take 2's complement maybe, then return
     else :
         SF = False
-    return data
 
 def not_numb(data) :
-    for i in range(len(data)) :
-        if data[i] == 1 :
-            data[i] = 0
+    return_data = ""
+    for i in data :
+        if i == "1" :
+            return_data = return_data + "0"
         else :
-            data[i] = 1
+            return_data = return_data + "1"
+    return return_data
+
 
 def addition (data, addend):
-    i = len(data)
+
+    i = len(data) - 1
     sum = ""
-    while i != 0 :
-        temp = CF + data[i] + addend[i]
+    global CF
+    CF = 0
+    while i >= 0 :    
+        temp = int(data[i]) + int(addend[i]) + CF
         if temp > 1 : 
             CF = 1
             sum = str(temp-2) + sum
         else :
             CF = 0
             sum = str(temp) + sum 
-        i -= 1   
+        i -= 1
     
-    sum = adjust_flag(sum)
+    adjust_flag(sum)
     return sum
 
 for line in inputfile:
@@ -76,13 +83,16 @@ for line in inputfile:
 
 lastInstruction = PC
 PC = 0
-    
-while PC != lastInstruction:
+
+bin_one = "0000000000000001"
+bin_zero = "0000000000000000"
+not_bin_one = "1111111111111111"
+
+while PC <= lastInstruction:
+    #print(PC)
     instruction  = memory[PC]
     opcode = instruction[0:6]
     opcode = int(opcode,2)
-    operand_hex = hex(int(operand,2))
-    operand_hex = operand[2:]
 
     addrMode = instruction[6:]
     addrMode = int(addrMode,2)
@@ -93,8 +103,9 @@ while PC != lastInstruction:
     operand2 = memory[PC] 
     operand = str(operand1) + str(operand2)
 
-    bin_one = "0000000000000001"
-    bin_zero = "0000000000000000"
+    operand_hex = hex(int(operand,2))
+    operand_hex = operand_hex[2:]
+    operand_hex =  operand_hex.zfill(4)
 
     #taking the data
     if addrMode == 0 :
@@ -104,7 +115,8 @@ while PC != lastInstruction:
     elif addrMode == 2 :
         memo_address = registers[operand_hex][0]
         memo_address = int(memo_address,2)
-        data = memory[memo_address] + memory[memo_address+1] 
+        if opcode != 3: #olmayan datayı almaya çalıştığı için hata alıyoruz
+            data = memory[memo_address] + memory[memo_address+1]
     else :
         memo_address = int(operand,2)
         data = memory[memo_address] + memory[memo_address+1] 
@@ -123,15 +135,13 @@ while PC != lastInstruction:
 
     elif opcode == 4:   #ADD
         sum = addition(data, A[0])
-        sum = bin(sum)
-        A[0] = sum[2:]
+        A[0] = sum
 
     elif opcode == 5:   #SUB
         operand = not_numb(data)
         operand = addition(operand, bin_one)
         sub = addition(A[0], operand)
-        sub = bin(sub)
-        A[0] = sub[2:]
+        A[0] = sub
         
     elif opcode == 6:   #INC
         inc = addition(data, bin_one)
@@ -142,10 +152,9 @@ while PC != lastInstruction:
             memory[memo_address + 1] = inc[8:]
         
     elif opcode == 7:   #DEC
-        not_bin_one = not_numb(bin_one)
         dec = addition(data, not_bin_one)
         if addrMode == 1 :
-            registers[operand_hex][0] = inc
+            registers[operand_hex][0] = dec
         elif addrMode == 2 or addrMode == 3 :
             memory[memo_address] = dec[:8]
             memory[memo_address + 1] = dec[8:]
@@ -158,7 +167,7 @@ while PC != lastInstruction:
             else :
                 xor = xor + "1"
 
-        xor = adjust_flag(xor)
+        adjust_flag(xor)
         A[0] = xor
 
     elif opcode == 9:   #AND
@@ -169,7 +178,7 @@ while PC != lastInstruction:
             else :
                 operand_and = operand_and + "0"
 
-        operand_and = adjust_flag(operand_and)
+        adjust_flag(operand_and)
         A[0] = operand_and
 
     elif opcode == 10:  #OR
@@ -180,7 +189,7 @@ while PC != lastInstruction:
             else :
                 operand_or = operand_or + "1"
 
-        operand_or = adjust_flag(operand_or)
+        adjust_flag(operand_or)
         A[0] = operand_or
 
     elif opcode == 11:  #NOT
@@ -196,11 +205,8 @@ while PC != lastInstruction:
         registers[operand_hex][0] = data
 
     elif opcode == 13:  #SHR
-        data = + "0" + data[:-1]
+        data = "0" + data[:-1]
         registers[operand_hex][0] = data
-
-    elif opcode == 14:  #NOP
-        continue
 
     elif opcode == 15:  #PUSH
         memory[S] = data[:8]
@@ -209,21 +215,45 @@ while PC != lastInstruction:
         S -= 1
 
     elif opcode == 16:  #POP
-        registers[operand_hex][0] = memory[S+1] + memory[S]
+        registers[operand_hex][0] = memory[S+2] + memory[S+1]
         S += 2 
 
     elif opcode == 17:  #CMP
-    elif opcode == 18:
-    elif opcode == 19:
-    elif opcode == 20:
-    elif opcode == 21:
-    elif opcode == 22:
-    elif opcode == 23:
-    elif opcode == 24:
-    elif opcode == 25:
-    elif opcode == 26:
-    elif opcode == 27:
-    elif opcode == 28:
-    else:
-        #what
+        operand = not_numb(data)
+        operand = addition(operand, bin_one)
+        addition(A[0],operand)
+    elif opcode == 18: #JMP
+        PC = int(data,2)-1
+    elif opcode == 19: #JZ JE
+        if ZF:
+            PC = int(data,2)-1
+    elif opcode == 20: #JNZ JNE
+        if not(ZF):
+            PC = int(data,2)-1
+    elif opcode == 21: #JC
+        if CF == 1:
+            PC = int(data,2)-1
+    elif opcode == 22: #JNC
+        if CF == 0:
+            PC = int(data,2)-1
+    elif opcode == 23: #JA
+        if not(SF) and not(ZF):
+            PC = int(data,2)-1
+    elif opcode == 24: #JAE
+        if not(SF):
+            PC = int(data,2)-1
+    elif opcode == 25: #JB
+        if SF:
+            PC = int(data,2)-1
+    elif opcode == 26: #JBE
+        if SF or ZF:
+            PC = int(data,2)-1
+    elif opcode == 27: #READ
+        inputs = input()
+        inputs =  inputs[0]
+        inputs = bin(inputs)[2:]
+        memory[memo_address] = inputs[:8]
+        memory[memo_address+1] = inputs[8:]
+    elif opcode == 28: #PRINT
+        print(chr(int(data,2)))
     PC += 1
