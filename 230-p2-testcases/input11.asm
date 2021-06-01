@@ -1,0 +1,17 @@
+	JMP START
+END:
+	PRINT 'O'
+	HALT
+START:
+	LOAD '!'
+	PUSH A
+	LOAD 'L'
+	PUSH A
+	LOAD '+'
+	POP B
+	POP C
+	ADD C
+	CMP B
+	JE END
+	PRINT 'X'
+	HALT

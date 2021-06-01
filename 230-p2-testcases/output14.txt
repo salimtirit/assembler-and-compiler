@@ -1,0 +1,11 @@
+-- This output requires user input hence it can't be automated --
+
+Assume entered chars are: Q W E R T Y -
+
+Output will be as such:
+Y
+T
+R
+E
+W
+Q
