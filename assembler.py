@@ -1,5 +1,5 @@
 import sys
-
+import re
 def string_binary_to_integer(binary):
     times = len(binary)-1
     y = 0 
@@ -14,12 +14,16 @@ registers = ["","A", "B", "C", "D", "E"]
 label_dict = {}  #stores labels with their address values, a map
 opcode_list = ["", "HALT", "LOAD", "STORE", "ADD", "SUB", "INC", "DEC", "XOR", "AND", "OR", "NOT", "SHL", "SHR", "NOP", "PUSH", "POP", "CMP", "JMP", ["JZ", "JE"], ["JNZ", "JNE"], "JC", "JNC", "JA", "JAE", "JB", "JBE", "READ", "PRINT"]
 
-
-inputFile = open("prog1.asm", "r")
-outputFile = open("prog.bin", "w")
+sayi = 15
+name = "./230-p2-testcases/input{}.asm".format(sayi)
+name2 = "output{}.bin".format(sayi)
+inputFile = open(name, "r")
+outputFile = open(name2, "w")
 
 for line in inputFile:
     line = line.strip()
+    if line == "":
+        continue
     all_lines.append(line)
 
     if line.find(":") != -1 :  #label
@@ -31,10 +35,8 @@ for line in inputFile:
 
 isLabel = False
 for lines in all_lines:
-
     tokens = lines.split(" ") #pattern tokens = line.split() de olur
     instruction = tokens[0]
-
     opcode = ""
     #opcode part
     if instruction == "JZ" or instruction == "JE" :
@@ -51,7 +53,7 @@ for lines in all_lines:
     if isLabel == False :
         if instruction == "HALT" or instruction == "NOP":
             addessing_mode = "00"
-            hex_data = "0000"
+            hex_data = "0x0000"
         else:
             data = tokens[1]
             if (data[0] == "[") & (data[-1] == "]") :  #address
@@ -59,14 +61,14 @@ for lines in all_lines:
 
                 if registers.__contains__(data) :
                     addessing_mode = "10"   # address of data given in a register
-                    hex_data = "000" + str(registers.index(data))
+                    hex_data = "0x000" + str(registers.index(data)) #burda hata olabilir
                 else :
                     addessing_mode = "11"   # address of data is given
-                    hex_data = data
+                    hex_data = "0x" + data
 
             elif registers.__contains__(data) :  
                 addessing_mode = "01"   # data in register
-                hex_data = "000" + str(registers.index(data))
+                hex_data = "0x000" + str(registers.index(data))
 
             else :
                 addessing_mode = "00"  # immerdiate data
@@ -76,7 +78,7 @@ for lines in all_lines:
                 elif label_dict.keys().__contains__(data) :
                     hex_data = hex(label_dict[data])
                 elif (ord(data[0]) < 58 ) & (ord(data[0]) > 47) :
-                    hex_data = data
+                    hex_data = "0x"+data
                 else:
                     data = data.strip(":")
                     hex_data = hex(label_dict[data])
