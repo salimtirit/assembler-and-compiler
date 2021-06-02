@@ -1,20 +1,25 @@
-from io import open_code
+sayi = 14
+inputfile = open("output{}.bin".format(sayi),"r")
 
-inputfile = open("prog.bin","r")
+
+bin_one = "0"*15+"1"
+bin_zero = "0"*16
+not_bin_one = "1"*16
+
 
 #Registers
-A = [None]
-B = [None]
-C = [None]
-D = [None]
-E = [None]
+A = [bin_zero]
+B = [bin_zero]
+C = [bin_zero]
+D = [bin_zero]
+E = [bin_zero]
 S = 2**16 - 1
 PC = 0
 CF = 0
 ZF = False
 SF = False
 
-memory = [None] * 2**16
+memory = ["0"*8] * 2**16
 
 registers = {
     "0000" : PC,
@@ -84,9 +89,6 @@ for line in inputfile:
 lastInstruction = PC
 PC = 0
 
-bin_one = "0000000000000001"
-bin_zero = "0000000000000000"
-not_bin_one = "1111111111111111"
 
 while PC <= lastInstruction:
     #print(PC)
@@ -250,10 +252,19 @@ while PC <= lastInstruction:
             PC = int(data,2)-1
     elif opcode == 27: #READ
         inputs = input()
-        inputs =  inputs[0]
-        inputs = bin(inputs)[2:]
-        memory[memo_address] = inputs[:8]
-        memory[memo_address+1] = inputs[8:]
+        inputs = inputs[0]
+        inputs = (str(bin(ord(inputs)))[2:]).zfill(16) #changing char to bin to string to remove 0b from beginning and completing to 16 bits
+        if addrMode == 1:
+            registers[operand_hex][0] = inputs
+        elif addrMode == 2:
+            memo_address = registers[operand_hex][0]
+            memo_address = int(memo_address,2)
+            memory[memo_address] = inputs[:8]
+            memory[memo_address+1] = inputs[8:]
+        elif addrMode == 3:
+            memo_address = int(operand,2)
+            memory[memo_address] = inputs[:8]
+            memory[memo_address+1] = inputs[8:]
     elif opcode == 28: #PRINT
         print(chr(int(data,2)))
     PC += 1
