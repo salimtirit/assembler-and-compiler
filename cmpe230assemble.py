@@ -1,6 +1,7 @@
 import sys
 import re
-def string_binary_to_integer(binary):
+
+def string_binary_to_integer(binary):  #takes binary input in string format, converts it into hex
     times = len(binary)-1
     y = 0 
     for x in binary:
@@ -8,7 +9,7 @@ def string_binary_to_integer(binary):
         times-= 1
     return y
 
-def valid_hex(data) :
+def valid_hex(data) :   #checks whether given data is 2 byte valid input which only contains hex characters
 
     if len(data) == 4 :
         for x in range(4) :
@@ -23,12 +24,13 @@ counter = 0   #counts instructions
 all_lines = []  #store lines
 registers = ["","A", "B", "C", "D", "E"]
 label_dict = {}  #stores labels with their address values, a map
+#stores intructions in indexis which are determined by their opcodes
 opcode_list = ["", "HALT", "LOAD", "STORE", "ADD", "SUB", "INC", "DEC", "XOR", "AND", "OR", "NOT", "SHL", "SHR", "NOP", "PUSH", "POP", "CMP", "JMP", "JZ", "JNZ", "JC", "JNC", "JA", "JAE", "JB", "JBE", "READ", "PRINT","JE","JNE"]
 valid_addModes = [[],[0,1,2,3],[0,1,2,3],[1,2,3],[0,1,2,3],[0,1,2,3],[0,1,2,3],[0,1,2,3],[0,1,2,3],[0,1,2,3],[0,1,2,3],[0,1,2,3],[1,2],[1,2],[0,1,2,3],[1,2],[1,2],[0,1,2,3],[0],[0],[0],[0],[0],[0],[0],[0],[0],[1,2,3],[0,1,2,3],[0],[0]]
 output_queue = []
 
 inputName = sys.argv[1]
-name = re.search('\w+(?=.asm)',inputName)
+name = re.search('\w+(?=.asm)',inputName)  #taking input name
 outputName = "{}.bin".format(name[0])
 inputFile = open(inputName, "r")
 
@@ -50,13 +52,13 @@ for line in inputFile:
     else:
         counter += 1
 
-noSecond = False
+noSecond = False  #whether there is a second token
 for lines in all_lines:
     tokens = lines.split(" ") #pattern tokens = line.split() de olur
     instruction = tokens[0]
     opcode = ""
     #opcode part
-    if instruction == "JZ" or instruction == "JE" :
+    if instruction == "JZ" or instruction == "JE" : #finding value of the opcode
         opcode = bin(19)
     elif instruction == "JNZ" or instruction == "JNE" :
         opcode = bin(20)
@@ -65,14 +67,14 @@ for lines in all_lines:
     else: 
         if label_dict.keys().__contains__(instruction[:-1]) :
             noSecond = True
-        else :  #invalid instruction this part might be not necessary
+        else :  #invalid instruction
             exit(0)     
 
     addessing_mode = ""
     #data part
-    if noSecond == False :
+    if noSecond == False :   #if the data is not label
         index = opcode_list.index(instruction)
-        valid_addr_modes = valid_addModes[index]
+        valid_addr_modes = valid_addModes[index]    #valid addrmode of given operation
 
         if instruction == "HALT" or instruction == "NOP":
             addessing_mode = "00"
@@ -114,9 +116,6 @@ for lines in all_lines:
                     hex_data = hex(ord(data))
                 elif label_dict.keys().__contains__(data) : #label
                     hex_data = hex(label_dict[data])
-                #elif data.find(":") != -1 :  #?
-                #   data = data.strip(":")
-                #    hex_data = hex(label_dict[data])
                 else :  
                     hex_data = "0x"+data
               
@@ -124,18 +123,18 @@ for lines in all_lines:
             
     if noSecond == False :
         opcode = str(opcode)
-        first_two = opcode[2:] + str(addessing_mode)
+        first_two = opcode[2:] + str(addessing_mode)    # opcode + addr_mode
 
-        a = hex(string_binary_to_integer(first_two))
+        a = hex(string_binary_to_integer(first_two))   #turning it into hex
         a = str(a)[2:]
-        while len(a) < 2:
+        while len(a) < 2:   #adjusting the lengt
             a = "0" + a
 
         hex_data = str(hex_data)[2:]
         while len(hex_data) < 4:
             hex_data = "0" + hex_data
 
-        result =  a + hex_data
+        result =  a + hex_data      # combining with the data
         output_queue.append(result+"\n")
 
     elif instruction == "HALT" :
@@ -144,11 +143,11 @@ for lines in all_lines:
 
     elif instruction == "NOP":
         result = "380000"
-        output_queue.append(result+"\n")
+        output_queue.append(result+"\n")  #putting the outputs into queue
 
     noSecond = False
 
-outputFile = open(outputName, "w")
-for lines in output_queue :
+outputFile = open(outputName, "w")  
+for lines in output_queue :     #witing outputs to the outputfile
     outputFile.write(lines)  
 outputFile.close()
