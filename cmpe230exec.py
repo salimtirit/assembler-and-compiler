@@ -1,6 +1,10 @@
-sayi = 14
-inputfile = open("output{}.bin".format(sayi),"r")
-
+import sys
+import re
+inputName = sys.argv[1]
+name = re.search('\w+(?=.bin)',inputName)
+outputName = "{}.txt".format(name[0])
+inputFile = open(inputName, "r")
+outputFile = open(outputName, "w")
 
 bin_one = "0"*15+"1"
 bin_zero = "0"*16
@@ -73,7 +77,7 @@ def addition (data, addend):
     adjust_flag(sum)
     return sum
 
-for line in inputfile:
+for line in inputFile:
     line = bin(int(line,16))   # hex -> binary
     line = str(line)
     line = line[2:]  # deleting '0b' part 
@@ -91,7 +95,6 @@ PC = 0
 
 
 while PC <= lastInstruction:
-    #print(PC)
     instruction  = memory[PC]
     opcode = instruction[0:6]
     opcode = int(opcode,2)
@@ -266,5 +269,7 @@ while PC <= lastInstruction:
             memory[memo_address] = inputs[:8]
             memory[memo_address+1] = inputs[8:]
     elif opcode == 28: #PRINT
-        print(chr(int(data,2)))
+        outputFile.write(chr(int(data,2))+"\n")
     PC += 1
+
+outputFile.close()
