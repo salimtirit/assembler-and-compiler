@@ -91,4 +91,8 @@ cpu230exec prog.bin
 
 This will run the binary code and produce the output specified by your program.
 
+The	above	process	is	illustrated	in	the	example	below:
+![image](https://user-images.githubusercontent.com/64011660/233506274-7c34d492-26b8-4455-9428-c3680934f318.png)
+
+
 Note that you may need to provide additional arguments to the assembler and execution simulator depending on the specific requirements of your project. Please refer to the project specifications for more information.
